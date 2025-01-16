@@ -1,4 +1,7 @@
 import json
+
+import pygame
+
 from enemyes import *
 
 pygame.init()
@@ -17,9 +20,10 @@ BULLET_COL = settings['bullet_col']
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Space Wars")
 
-# Дописать систему столкновения противника с игроком, выход с экрана(отнимается хп)
-# Сделать стартовый экран с началом игры, магазином прокачки и таблицей лидеров
-# После боя записывать результат в csv файл, а также сохранять настройки игрока(после покупки новые улучшения, после боя количество очков)
+# Дописать систему выхода с экрана(отнимается хп)
+# Сделать стартовый экран с началом игры(выбор режима), магазином прокачки и таблицей лидеров
+# После боя записывать результат в csv файл, а также сохранять настройки игрока(после покупки новые улучшения)
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -58,12 +62,18 @@ def main():
     all_sprites.add(player)
 
     score = 0
+    hp = PLAYER_HEALTH
 
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                if len(bullets) < BULLET_COL:
+                    bullet = Bullet(player.rect.centerx, player.rect.top)
+                    bullets.add(bullet)
+                    all_sprites.add(bullet )
 
         all_sprites.update()
 
@@ -73,7 +83,16 @@ def main():
             all_sprites.add(enemy)
 
         hits = pygame.sprite.groupcollide(bullets, enemies, True, True)
-        score += len(hits)
+        score += len(hits) * 15
+
+        crash_in_player = pygame.sprite.spritecollide(player, enemies, True)
+        if len(crash_in_player) * 20 < hp:
+            hp -= len(crash_in_player) * 20
+        else:
+            hp = 0
+            running = False
+
+
 
         bullets.update()
 
@@ -83,13 +102,10 @@ def main():
         pygame.display.flip()
         clock.tick(60)
 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_SPACE]:
-            if len(bullets) < BULLET_COL:
-                bullet = Bullet(player.rect.centerx, player.rect.top)
-                bullets.add(bullet)
-                all_sprites.add(bullet)
 
+    settings['cash'] += score
+    with open('settings.json', mode='w') as f:
+        json.dump(settings, f)
     pygame.quit()
 
 
