@@ -1,0 +1,8 @@
+{
+  "health": 60,
+  "speed": 5,
+  "bullet_col": 10,
+  "bullet_speed": 3,
+  "bullet_damage": 20,
+  "cash": 0
+}
