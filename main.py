@@ -1,6 +1,5 @@
 import json
 import random
-from pydoc import visiblename
 
 import pygame
 
