@@ -1,0 +1,79 @@
+import pygame
+import random
+
+# Инициализация Pygame
+pygame.init()
+
+# Определение необходимых переменных
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+
+# Цвета
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+
+# Шрифт
+font = pygame.font.Font(None, 36)
+
+# Переменные очков
+score = 0
+
+# Класс для врагов
+class Enemy:
+    def __init__(self):
+        self.x = random.randint(0, screen_width)
+        self.y = random.randint(0, screen_height)
+        self.size = 50
+
+    def draw(self):
+        pygame.draw.rect(screen, RED, (self.x, self.y, self.size, self.size))
+
+    def check_collision(self, player_rect):
+        enemy_rect = pygame.Rect(self.x, self.y, self.size, self.size)
+        return player_rect.colliderect(enemy_rect)
+
+# Игровой цикл
+def game_loop():
+    global score
+    clock = pygame.time.Clock()
+    running = True
+
+    enemies = [Enemy() for _ in range(5)]  # Создаем 5 врагов
+    player_rect = pygame.Rect(screen_width // 2, screen_height // 2, 50, 50)  # Игрок
+
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]: player_rect.x -= 5
+        if keys[pygame.K_RIGHT]: player_rect.x += 5
+        if keys[pygame.K_UP]: player_rect.y -= 5
+        if keys[pygame.K_DOWN]: player_rect.y += 5
+
+        screen.fill(WHITE)
+
+        # Проверка на столкновение с врагами
+        for enemy in enemies:
+            enemy.draw()
+            if enemy.check_collision(player_rect):
+                score += 1  # Увеличиваем счет
+                enemies.remove(enemy)  # Удаляем врага если он "убит"
+                enemies.append(Enemy())  # Добавляем нового врага
+
+        # Рисуем игрока
+        pygame.draw.rect(screen, (0, 0, 255), player_rect)
+
+        # Отображение очков
+        score_text = font.render(f'Score: {score}', True, (0, 0, 0))
+        screen.blit(score_text, (10, 10))
+
+        pygame.display.flip()
+        clock.tick(30)
+
+    pygame.quit()
+
+# Запуск игры
+game_loop()
