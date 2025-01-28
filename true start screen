@@ -1,0 +1,62 @@
+import pygame
+import sys
+
+# Инициализация Pygame
+pygame.init()
+
+# Константы
+WIDTH, HEIGHT = 800, 600
+BUTTON_WIDTH, BUTTON_HEIGHT = 200, 50
+WHITE = (255, 255, 255)
+GREY = (100, 100, 100)
+BLACK = (0, 0, 0)
+
+# Загрузка звездного фона
+background = pygame.image.load('star_background.jpg')  # Замените 'star_background.jpg' на путь к вашему изображению
+
+# Создание окна
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('Space Wars')
+
+
+# Функция для отрисовки кнопок
+def draw_button(text, x, y):
+    font = pygame.font.SysFont(None, 36)
+    button_rect = pygame.Rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
+    pygame.draw.rect(screen, GREY, button_rect)
+    text_surf = font.render(text, True, WHITE)
+    text_rect = text_surf.get_rect(center=button_rect.center)
+    screen.blit(text_surf, text_rect)
+
+
+# Функция для отрисовки названия
+def draw_title():
+    font = pygame.font.SysFont(None, 48)
+    title_surf = font.render('Space Wars', True, WHITE)
+    title_rect = title_surf.get_rect(center=(WIDTH // 2, HEIGHT // 4))
+    screen.blit(title_surf, title_rect)
+
+
+# Главный игровой цикл
+def main_menu():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        screen.blit(background, (0, 0))  # Задний фон
+
+        draw_title()  # Отрисовка названия
+
+        # Отрисовка кнопок
+        draw_button('Играть', WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT // 2 - 80)
+        draw_button('Улучшения', WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT // 2 - 20)
+        draw_button('Настройки', WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT // 2 + 40)
+        draw_button('Выход', WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT // 2 + 100)
+
+        pygame.display.flip()
+
+
+if __name__ == "__main__":
+    main_menu()
