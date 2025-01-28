@@ -1,0 +1,85 @@
+import pygame
+import sys
+
+# Инициализация Pygame
+pygame.init()
+
+# Константы
+WIDTH, HEIGHT = 800, 600
+FPS = 60
+
+# Цвета
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+
+# Персонаж и его параметры
+class Player:
+    def __init__(self):
+        self.hp = 100
+        self.weapon = "Пистолет"
+        self.ship_type = "Стандартный"
+
+    def upgrade_hp(self, amount):
+        self.hp += amount
+        print(f"Здоровье увеличено на {amount}. Текущее HP: {self.hp}")
+
+    def change_weapon(self, weapon):
+        self.weapon = weapon
+        print(f"Смен weapon на {self.weapon}")
+
+    def change_ship(self, ship_type):
+        self.ship_type = ship_type
+        print(f"Смен ship на {self.ship_type}")
+
+# Класс для магазина улучшений
+class UpgradeShop:
+    def __init__(self, player):
+        self.player = player
+
+    def show_menu(self):
+        print("Доступные улучшения:")
+        print("1. Увеличить HP на 25%")
+        print("2. Увеличить HP на 50%")
+        print("3. Увеличить HP на 75%")
+        print("4. Увеличить HP на 100%")
+        print("5. Сменить оружие (Пистолет, Лазер, Ракета)")
+        print("6. Сменить корпус (Стандартный, Ультрасовременный, Военный)")
+        print("7. Выход")
+
+    def process_choice(self, choice):
+        if choice == '1':
+            self.player.upgrade_hp(25)
+        elif choice == '2':
+            self.player.upgrade_hp(50)
+        elif choice == '3':
+            self.player.upgrade_hp(75)
+        elif choice == '4':
+            self.player.upgrade_hp(100)
+        elif choice == '5':
+            weapon = input("Выберите новое оружие (Пистолет, Лазер, Ракета): ")
+            self.player.change_weapon(weapon)
+        elif choice == '6':
+            ship_type = input("Выберите новый корпус (Стандартный, Ультрасовременный, Военный): ")
+            self.player.change_ship(ship_type)
+        elif choice == '7':
+            print("Выход из магазина.")
+            return False
+        return True
+
+# Главная игровая функция
+def main():
+    player = Player()
+    shop = UpgradeShop(player)
+
+    while True:
+        shop.show_menu()
+        choice = input("Введите номер улучшения: ")
+        if not shop.process_choice(choice):
+            break
+
+    pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    main()
