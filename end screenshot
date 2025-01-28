@@ -1,0 +1,100 @@
+import pygame
+import sys
+
+# Инициализация Pygame
+pygame.init()
+
+# Константы
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+FONT_SIZE = 64
+
+# Цвета
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Настройка экрана
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption('Game Over Screen')
+
+# Шрифты
+font = pygame.font.Font(None, FONT_SIZE)
+
+# Загрузка музыки
+pygame.mixer.music.load('defeat_music.mp3')  # Укажите путь к вашему файлу
+pygame.mixer.music.set_volume(0.5)
+
+# Функция для отрисовки текста
+def draw_text(text, font, surface, x, y):
+    textobj = font.render(text, True, BLACK)
+    textrect = textobj.get_rect()
+    textrect.center = (x, y)
+    surface.blit(textobj, textrect)
+
+# Кнопка
+class Button:
+    def __init__(self, text, x, y, width, height, color, hover_color):
+        self.text = text
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.color = color
+        self.hover_color = hover_color
+        self.font = pygame.font.Font(None, 36)
+    
+    def draw(self, surface):
+        mouse = pygame.mouse.get_pos()
+        if self.x < mouse[0] < self.x + self.width and self.y < mouse[1] < self.y + self.height:
+            pygame.draw.rect(surface, self.hover_color, (self.x, self.y, self.width, self.height))
+        else:
+            pygame.draw.rect(surface, self.color, (self.x, self.y, self.width, self.height))
+        
+        text_surface = self.font.render(self.text, True, WHITE)
+        text_rect = text_surface.get_rect(center=(self.x + self.width // 2, self.y + self.height // 2))
+        surface.blit(text_surface, text_rect)
+
+    def is_clicked(self, pos):
+        if self.x < pos[0] < self.x + self.width and self.y < pos[1] < self.y + self.height:
+            return True
+        return False
+
+# Создание кнопок
+buttons = [
+    Button('Restart', 300, 250, 200, 50, (0, 128, 0), (0, 255, 0)),
+    Button('Menu', 300, 320, 200, 50, (0, 128, 0), (0, 255, 0)),
+    Button('Levels', 300, 390, 200, 50, (0, 128, 0), (0, 255, 0)),
+    Button('Exit', 300, 460, 200, 50, (128, 0, 0), (255, 0, 0)),
+]
+
+# Цикл экрана проигрыша
+def game_over_screen():
+    pygame.mixer.music.play(-1)  # Цикличное воспроизведение музыки
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                if buttons[0].is_clicked(pos):
+                    print("Restart the game")  # Здесь добавьте логику перезапуска игры
+                elif buttons[1].is_clicked(pos):
+                    print("Go to Menu")  # Здесь добавьте логику возврата в меню
+                elif buttons[2].is_clicked(pos):
+                    print("Select Levels")  # Здесь добавьте логику перехода к уровням
+                elif buttons[3].is_clicked(pos):
+                    pygame.quit()
+                    sys.exit()
+
+        # Отрисовка экрана
+        screen.fill(WHITE)
+        draw_text('Game Over', font, screen, SCREEN_WIDTH // 2, 100)
+        
+        for button in buttons:
+            button.draw(screen)
+        
+        pygame.display.flip()
+
+# Запуск экрана проигрыша
+game_over_screen()
