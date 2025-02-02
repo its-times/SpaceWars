@@ -392,7 +392,8 @@ def start_lvl_game():
                         bullet = Bullet(player.rect.centerx, player.rect.top)
                         bullets.add(bullet)
                         all_sprites.add(bullet)
-                        victrel_music.play()
+                        if ENABLE_SOUND == 'True':
+                            victrel_music.play()
                 if event.key == pygame.K_ESCAPE:
                     if freeze_flag:
                         freeze_flag = False
@@ -430,10 +431,12 @@ def start_lvl_game():
                 score += hit[0].reward
                 hit[0].kill()
                 kills += 1
-                crash_music.play()
+                if ENABLE_SOUND == 'True':
+                    crash_music.play()
                 kills_my_boss += 1
             else:
-                shot_music.play()
+                if ENABLE_SOUND == 'True':
+                    shot_music.play()
 
         crash_in_player = pygame.sprite.spritecollide(player, enemies, True)
         for crash in crash_in_player:
@@ -447,11 +450,13 @@ def start_lvl_game():
             hp -= bul.damage
         if hp <= 0:
             running = False
-            crash_music.play()
+            if ENABLE_SOUND == 'True':
+                crash_music.play()
 
         font_1 = pygame.font.SysFont('Arial', 20)
         hp_text = font_1.render(f'Ваше здоровье: {hp}', False, (255, 255, 255))
         score_text = font_1.render(f'Набранные очки: {score}', False, (255, 255, 255))
+        cur_level_text = font_1.render(f'Уровень: {str(CURRENT_LEVEL)}', False, (255, 255, 255))
 
         bullets.update()
 
@@ -462,6 +467,7 @@ def start_lvl_game():
 
         screen.blit(hp_text, (10, 20))
         screen.blit(score_text, (SCREEN_WIDTH - score_text.get_width(), 20))
+        screen.blit(cur_level_text, (SCREEN_WIDTH // 2 - cur_level_text.get_width() // 2, 20))
 
         pygame.display.flip()
         clock.tick(60)
