@@ -1,8 +1,12 @@
+import pygame
+
 import lvl_game
 from enemyes import *
 from config import *
 import datetime
 from endless_game import generate_enemy
+
+FPS = 60
 
 pygame.init()
 pygame.font.init()
@@ -10,14 +14,13 @@ pygame.font.init()
 with open('settings.json') as f:
     settings = json.load(f)
 
-PLAYER_HEALTH = settings['health']
-PLAYER_SPEED = settings['speed']
-BULLET_SPEED = settings['bullet_speed']
-BULLET_DAMAGE = settings['bullet_damage']
-BULLET_COL = settings['bullet_col']
-CURRENT_LEVEL = settings['level']
-ENABLE_SOUND = settings['enable_sound']
-
+PLAYER_HEALTH, PROKACHKA_HEALTH = settings['stats']['health'], 20
+PLAYER_SPEED, PROKACHKA_SPEED = settings['stats']['speed'], 10
+BULLET_SPEED, PROKACHKA_BULLET_SPEED = settings['stats']['bullet_speed'], 10
+BULLET_DAMAGE, PROKACHKA_BULLET_DAMAGE = settings['stats']['bullet_damage'], 15
+BULLET_COL, PROKACHKA_BULLET_COL = settings['stats']['bullet_col'], 10
+CURRENT_LEVEL = settings['stats']['level']
+ENABLE_SOUND = settings['stats']['enable_sound']
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Space Wars")
@@ -26,10 +29,6 @@ shot_music = pygame.mixer.Sound('data/shot.mp3')
 crash_music = pygame.mixer.Sound('data/crash.mp3')
 victrel_music = pygame.mixer.Sound('data/vistrel.mp3')
 win_music = pygame.mixer.Sound('data/win_music.mp3')
-
-
-# магазин прокачки
-# сохранять настройки игрока(после покупки новые улучшения)
 
 
 class Player(pygame.sprite.Sprite):
@@ -60,7 +59,8 @@ class Bullet(pygame.sprite.Sprite):
 
 def screen_results():
     with open('results.csv') as csvfile:
-        data = sorted([[line.split(',')[0], int(line.split(',')[1]), line.split(',')[2]] for line in csvfile.read().split('\n')[1:]], key=lambda x: x[1], reverse=True)
+        data = sorted([[line.split(',')[0], int(line.split(',')[1]), line.split(',')[2]] for line in
+                       csvfile.read().split('\n')[1:]], key=lambda x: x[1], reverse=True)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -90,7 +90,6 @@ def screen_results():
         pygame.display.flip()
 
 
-
 def screen_settings():
     global ENABLE_SOUND
     while True:
@@ -104,10 +103,10 @@ def screen_settings():
                 if event.key == pygame.K_1:
                     if ENABLE_SOUND == 'True':
                         ENABLE_SOUND = 'False'
-                        settings['enable_sound'] = 'False'
+                        settings['stats']['enable_sound'] = 'False'
                     else:
                         ENABLE_SOUND = 'True'
-                        settings['enable_sound'] = 'True'
+                        settings['stats']['enable_sound'] = 'True'
                 if event.key == pygame.K_ESCAPE:
                     start_screen()
                     return
@@ -126,7 +125,101 @@ def screen_settings():
 
 
 def shop_screen():
-    pass
+    global PLAYER_HEALTH, PLAYER_SPEED, BULLET_SPEED, BULLET_DAMAGE, BULLET_COL, settings
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                with open('settings.json', mode='w') as f:
+                    json.dump(settings, f)
+                pygame.quit()
+                return
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    with open('settings.json', mode='w') as f:
+                        json.dump(settings, f)
+                    start_screen()
+                    return
+                if event.key == pygame.K_1:
+                    if settings['stats']['cash'] >= settings["shop"]["price_up_health"]:
+                        print(1)
+                        PLAYER_HEALTH = round(PLAYER_HEALTH * (PROKACHKA_HEALTH / 100 + 1), 2)
+                        settings['stats']['health'] = PLAYER_HEALTH
+                        settings['stats']['cash'] -= settings["shop"]["price_up_health"]
+                        settings["shop"]["price_up_health"] = int(
+                            round(settings["shop"]["price_up_health"] * (PROKACHKA_HEALTH / 100 + 1.3), 0))
+                if event.key == pygame.K_2:
+                    if settings['stats']['cash'] >= settings["shop"]["price_up_speed"]:
+                        PLAYER_SPEED = round(PLAYER_SPEED * (PROKACHKA_SPEED / 100 + 1), 2)
+                        settings['stats']['speed'] = PLAYER_SPEED
+                        settings['stats']['cash'] -= settings["shop"]["price_up_speed"]
+                        settings["shop"]["price_up_speed"] = int(
+                            round(settings["shop"]["price_up_speed"] * (PROKACHKA_SPEED / 100 + 1.3), 0))
+                if event.key == pygame.K_3:
+                    if settings['stats']['cash'] >= settings["shop"]["price_up_bullet_speed"]:
+                        BULLET_SPEED = round(BULLET_SPEED * (PROKACHKA_BULLET_SPEED / 100 + 1), 2)
+                        settings['stats']['bullet_speed'] = BULLET_SPEED
+                        settings['stats']['cash'] -= settings["shop"]["price_up_bullet_speed"]
+                        settings["shop"]["price_up_bullet_speed"] = int(
+                            round(settings["shop"]["price_up_bullet_speed"] * (PROKACHKA_BULLET_SPEED / 100 + 1.3), 0))
+                if event.key == pygame.K_4:
+                    if settings['stats']['cash'] >= settings["shop"]["price_up_bullet_damage"]:
+                        BULLET_DAMAGE = round(BULLET_DAMAGE * (PROKACHKA_BULLET_DAMAGE / 100 + 1), 2)
+                        settings['stats']['bullet_damage'] = BULLET_DAMAGE
+                        settings['stats']['cash'] -= settings["shop"]["price_up_bullet_damage"]
+                        settings["shop"]["price_up_bullet_damage"] = int(
+                            round(settings["shop"]["price_up_bullet_damage"] * (PROKACHKA_BULLET_DAMAGE / 100 + 1.3),
+                                  0))
+                if event.key == pygame.K_5:
+                    if settings['stats']['cash'] >= settings["shop"]["price_up_bullet_col"]:
+                        BULLET_COL = (BULLET_COL * (PROKACHKA_BULLET_COL / 100 + 1)) // 1
+                        settings['stats']['bullet_col'] = BULLET_COL
+                        settings['stats']['cash'] -= settings["shop"]["price_up_bullet_col"]
+                        settings["shop"]["price_up_bullet_col"] = int(
+                            round(settings["shop"]["price_up_bullet_col"] * (PROKACHKA_BULLET_COL / 100 + 1.3), 0))
+
+        fon = pygame.image.load('data/fon_start_screen.jpeg')
+        fon = pygame.transform.scale(fon, (SCREEN_WIDTH, SCREEN_HEIGHT)).convert()
+        font = pygame.font.SysFont('Arial', 25)
+        text_shop = font.render('Магазин', False, (255, 255, 255))
+        text_up_health = font.render(
+            f'(1) Увеличить здоровье: {PLAYER_HEALTH} + {PROKACHKA_HEALTH}%. '
+            f'Цена: {settings["shop"]["price_up_health"]}',
+            False,
+            (0, 255, 0))
+        text_up_speed = font.render(
+            f'(2) Увеличить скорость передвижения: {PLAYER_SPEED} + {PROKACHKA_SPEED}%. '
+            f'Цена: {settings["shop"]["price_up_speed"]}',
+            False,
+            (0, 255, 0))
+        text_up_bullet_speed = font.render(
+            f'(3) Увеличить скорость пуль: {BULLET_SPEED} + {PROKACHKA_BULLET_SPEED}% '
+            f'Цена: {settings["shop"]["price_up_bullet_speed"]}',
+            False,
+            (0, 255, 0))
+        text_up_bullet_damage = font.render(
+            f'(4) Увеличить урон: {BULLET_DAMAGE} + {PROKACHKA_BULLET_DAMAGE}% '
+            f'Цена: {settings["shop"]["price_up_bullet_damage"]}',
+            False,
+            (0, 255, 0))
+        text_up_bullet_col = font.render(f'(5) Увеличить количество пуль, выпускаемых за раз: '
+                                         f'{BULLET_COL} + {PROKACHKA_BULLET_COL}% '
+                                         f'Цена: {settings["shop"]["price_up_bullet_col"]}',
+                                         False, (0, 255, 0))
+        balance_text = font.render(f"Ваш баланс: {settings['stats']['cash']}", False, (255, 255, 255))
+        to_main_menu_text = font.render("(Esc) Выйти в главное меню", False, (255, 255, 255))
+        screen.fill((0, 0, 0))
+        screen.blit(fon, (0, 0))
+        screen.blit(text_shop, (SCREEN_WIDTH // 2 - text_shop.get_width() // 2, 20))
+        screen.blit(balance_text, (SCREEN_WIDTH - balance_text.get_width() - 20, 20))
+        screen.blit(to_main_menu_text, (20, SCREEN_HEIGHT - 20 - to_main_menu_text.get_height()))
+        screen.blit(text_up_health, (SCREEN_WIDTH // 2 - text_up_health.get_width() // 2, SCREEN_HEIGHT * 0.1))
+        screen.blit(text_up_speed, (SCREEN_WIDTH // 2 - text_up_speed.get_width() // 2, SCREEN_HEIGHT * 0.3))
+        screen.blit(text_up_bullet_speed,
+                    (SCREEN_WIDTH // 2 - text_up_bullet_speed.get_width() // 2, SCREEN_HEIGHT * 0.5))
+        screen.blit(text_up_bullet_damage,
+                    (SCREEN_WIDTH // 2 - text_up_bullet_damage.get_width() // 2, SCREEN_HEIGHT * 0.7))
+        screen.blit(text_up_bullet_col, (SCREEN_WIDTH // 2 - text_up_bullet_col.get_width() // 2, SCREEN_HEIGHT * 0.9))
+        pygame.display.flip()
 
 
 def start_screen():
@@ -167,13 +260,17 @@ def start_screen():
         text_exit = font.render('Выйти из игры(ESC)', False, (255, 255, 255))
         screen.fill((0, 0, 0))
         screen.blit(fon, (0, 0))
-        screen.blit(text_up, (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (9/10) * SCREEN_HEIGHT))
-        screen.blit(text_start_endless_game, (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (8/10) * SCREEN_HEIGHT))
-        screen.blit(text_start_lvl_game, (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (7/10) * SCREEN_HEIGHT))
-        screen.blit(text_check_results, (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (6/10) * SCREEN_HEIGHT))
-        screen.blit(text_settings, (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (5/10) * SCREEN_HEIGHT))
-        screen.blit(text_shop, (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (4/10) * SCREEN_HEIGHT))
-        screen.blit(text_exit, (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (3/10) * SCREEN_HEIGHT))
+        screen.blit(text_up, (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (9 / 10) * SCREEN_HEIGHT))
+        screen.blit(text_start_endless_game,
+                    (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (8 / 10) * SCREEN_HEIGHT))
+        screen.blit(text_start_lvl_game,
+                    (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (7 / 10) * SCREEN_HEIGHT))
+        screen.blit(text_check_results,
+                    (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (6 / 10) * SCREEN_HEIGHT))
+        screen.blit(text_settings,
+                    (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (5 / 10) * SCREEN_HEIGHT))
+        screen.blit(text_shop, (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (4 / 10) * SCREEN_HEIGHT))
+        screen.blit(text_exit, (SCREEN_WIDTH // 2 - text_up.get_width() // 2, SCREEN_HEIGHT - (3 / 10) * SCREEN_HEIGHT))
 
         pygame.display.flip()
 
@@ -221,6 +318,7 @@ def finish_lvl_screen(title: str, from_game, status_win: str):
 
 
 def start_endless_game():
+    global FPS
     fon = pygame.image.load('data/fon.png')
     fon = pygame.transform.scale(fon, (SCREEN_WIDTH, SCREEN_HEIGHT)).convert()
     clock = pygame.time.Clock()
@@ -242,10 +340,11 @@ def start_endless_game():
     kills_mejdu_boss = 0
     freeze_flag = False
     font = pygame.font.SysFont('Arial', 30)
+    cheat_mode = False
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                settings['cash'] += score
+                settings['stats']['cash'] += score
                 with open('settings.json', mode='w') as f:
                     json.dump(settings, f)
                 running = False
@@ -257,14 +356,32 @@ def start_endless_game():
                         all_sprites.add(bullet)
                         if ENABLE_SOUND == 'True':
                             victrel_music.play()
+
                 if event.key == pygame.K_ESCAPE:
                     if freeze_flag:
-                        freeze_flag = False
+                        running = False
                     else:
                         freeze_flag = True
+                if event.key == pygame.K_RETURN and freeze_flag:
+                    freeze_flag = False
+                if event.key == pygame.K_9:
+                    if cheat_mode:
+                        cheat_mode = False
+                        FPS = 60
+                    else:
+                        cheat_mode = True
+                        FPS = 500
+        font_1 = pygame.font.SysFont('Arial', 20)
         if freeze_flag:
             text_pause_game = font.render('Игра приостановлена.', False, (255, 255, 255))
-            screen.blit(text_pause_game, (SCREEN_WIDTH // 2 - text_pause_game.get_width() // 2, SCREEN_HEIGHT // 2 - text_pause_game.get_height() // 2))
+            text_finish_game = font_1.render('Для выхода нажмите Escape', False, (255, 0, 0))
+            text_continue_game = font_1.render('Для продолжения нажмите Enter', False, (0, 255, 0))
+            screen.blit(text_pause_game, (SCREEN_WIDTH // 2 - text_pause_game.get_width() // 2,
+                                          SCREEN_HEIGHT // 2 - text_pause_game.get_height() // 2))
+            screen.blit(text_finish_game, (20, SCREEN_HEIGHT - 20 - text_finish_game.get_height()))
+            screen.blit(text_continue_game, (
+                SCREEN_WIDTH - 20 - text_continue_game.get_width(),
+                SCREEN_HEIGHT - 20 - text_continue_game.get_height()))
             pygame.display.flip()
             continue
         all_sprites.add(bullets_boss)
@@ -272,12 +389,12 @@ def start_endless_game():
         try:
             for enemy in enemies:
                 if enemy.update():
-                    hp -= enemy.damage_crash
+                    if not cheat_mode:
+                        hp -= enemy.damage_crash
                     enemies.remove(enemy)
                     kills_mejdu_boss += 1
         except TypeError:
             pass
-
 
         conf_spawn = [[conf_spawn[0][0], int(round(conf_spawn[0][1] * (1 - (kills / 1000)), 0))],
                       [int(round(conf_spawn[1][0] * (1 - (kills / 1000)), 0)),
@@ -293,12 +410,16 @@ def start_endless_game():
             else:
                 chance_boss = chance_boss / 4
         enemies, boss, kills_mejdu_boss = generate_enemy(kills, lvl_boss, boss, enemies,
-                                                                                    chance_boss,
-                                                                                   kills_mejdu_boss)
+                                                         chance_boss,
+                                                         kills_mejdu_boss)
+        if boss:
+            if cheat_mode:
+                boss = False
 
         hits = pygame.sprite.groupcollide(bullets, enemies, True, False)
         for bullet, hit in hits.items():
-            hit[0].health -= BULLET_DAMAGE
+            if not cheat_mode:
+                hit[0].health -= BULLET_DAMAGE
             if hit[0].health <= 0:
                 if hit[0].__class__.__name__ in ['Boss1', 'Boss2', 'Boss3']:
                     boss = False
@@ -314,19 +435,20 @@ def start_endless_game():
 
         crash_in_player = pygame.sprite.spritecollide(player, enemies, True)
         for crash in crash_in_player:
-            hp -= crash.damage_crash
+            if not cheat_mode:
+                hp -= crash.damage_crash
         if hp <= 0:
             running = False
 
         hits_boos_in_player = pygame.sprite.spritecollide(player, bullets_boss, True)
         for bul in hits_boos_in_player:
-            hp -= bul.damage
+            if not cheat_mode:
+                hp -= bul.damage
         if hp <= 0:
             running = False
             if ENABLE_SOUND == 'True':
                 crash_music.play()
 
-        font_1 = pygame.font.SysFont('Arial', 20)
         hp_text = font_1.render(f'Ваше здоровье: {hp}', False, (255, 255, 255))
         score_text = font_1.render(f'Набранные очки: {score}', False, (255, 255, 255))
 
@@ -339,18 +461,24 @@ def start_endless_game():
         screen.blit(score_text, (SCREEN_WIDTH - score_text.get_width(), 20))
 
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(FPS)
 
-    settings['cash'] += score
+    settings['stats']['cash'] += score
     with open('settings.json', mode='w') as f:
         json.dump(settings, f)
     with open('results.csv', mode='a') as csvfile:
         csvfile.write(f'\n{str(datetime.datetime.now())},{score},{kills}')
+    all_sprites.clear(screen, screen)
+    enemies.clear(screen, screen)
+    bullets.clear(screen, screen)
+    bullets.update()
+    bullets.draw(screen)
     finish_lvl_screen(f'Набранные очки: {score}', 'endless', 'lost')
     pygame.quit()
 
 
 def start_lvl_game():
+    global CURRENT_LEVEL, FPS
     with open('levels.json') as f:
         CONF_LEVEL = json.load(f)[str(CURRENT_LEVEL)]
     fon = pygame.image.load('data/fon.png')
@@ -372,17 +500,26 @@ def start_lvl_game():
     kills_my_boss = 0
     freeze_flag = False
     font = pygame.font.SysFont('Arial', 30)
+    cheat_mode = False
     while running:
         if len(list(CONF_LEVEL)) == 0 and not boss:
-            finish_lvl_screen(f'Вы победили! Ваши очки: {score}', 'lvl', 'win')
             with open('settings.json', mode='w') as f:
+                CURRENT_LEVEL = str(int(settings['stats']['level']) + 1) if int(
+                    settings['stats']['level']) + 1 <= 4 else '4'
+                settings['stats']['level'] = CURRENT_LEVEL
                 json.dump(settings, f)
             with open('results.csv', mode='a') as csvfile:
                 csvfile.write(f'\n{str(datetime.datetime.now())},{score},{kills}')
+            all_sprites.clear(screen, screen)
+            enemies.clear(screen, screen)
+            bullets.clear(screen, screen)
+            bullets.update()
+            bullets.draw(screen)
+            finish_lvl_screen(f'Вы победили! Ваши очки: {score}', 'lvl', 'win')
             return
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                settings['cash'] += score
+                settings['stats']['cash'] += score
                 with open('settings.json', mode='w') as f:
                     json.dump(settings, f)
                 running = False
@@ -396,13 +533,29 @@ def start_lvl_game():
                             victrel_music.play()
                 if event.key == pygame.K_ESCAPE:
                     if freeze_flag:
-                        freeze_flag = False
+                        running = False
                     else:
                         freeze_flag = True
+                if event.key == pygame.K_RETURN:
+                    freeze_flag = False
+                if event.key == pygame.K_9:
+                    if cheat_mode:
+                        cheat_mode = False
+                        FPS = 60
+                    else:
+                        cheat_mode = True
+                        FPS = 500
+        font_1 = pygame.font.SysFont('Arial', 20)
         if freeze_flag:
             text_pause_game = font.render('Игра приостановлена.', False, (255, 255, 255))
+            text_finish_game = font_1.render('Для выхода нажмите Escape', False, (255, 0, 0))
+            text_continue_game = font_1.render('Для продолжения нажмите Enter', False, (0, 255, 0))
             screen.blit(text_pause_game, (SCREEN_WIDTH // 2 - text_pause_game.get_width() // 2,
                                           SCREEN_HEIGHT // 2 - text_pause_game.get_height() // 2))
+            screen.blit(text_finish_game, (20, SCREEN_HEIGHT - 20 - text_finish_game.get_height()))
+            screen.blit(text_continue_game, (
+                SCREEN_WIDTH - 20 - text_continue_game.get_width(),
+                SCREEN_HEIGHT - 20 - text_continue_game.get_height()))
             pygame.display.flip()
             continue
 
@@ -411,7 +564,8 @@ def start_lvl_game():
         try:
             for enemy in enemies:
                 if enemy.update():
-                    hp -= enemy.damage_crash
+                    if not cheat_mode:
+                        hp -= enemy.damage_crash
                     enemies.remove(enemy)
                     kills_my_boss += 1
         except TypeError:
@@ -419,12 +573,17 @@ def start_lvl_game():
 
         if random.randint(1, 30) == 15:
             try:
-                CONF_LEVEL, enemies, boss, kills_my_boss = lvl_game.generate_enemy(CONF_LEVEL, enemies, boss, kills_my_boss)
+                CONF_LEVEL, enemies, boss, kills_my_boss = lvl_game.generate_enemy(CONF_LEVEL, enemies, boss,
+                                                                                   kills_my_boss)
             except TypeError:
                 pass
+        if boss:
+            if cheat_mode:
+                boss = False
         hits = pygame.sprite.groupcollide(bullets, enemies, True, False)
         for bullet, hit in hits.items():
-            hit[0].health -= BULLET_DAMAGE
+            if not cheat_mode:
+                hit[0].health -= BULLET_DAMAGE
             if hit[0].health <= 0:
                 if hit[0].__class__.__name__ in ['Boss1', 'Boss2', 'Boss3']:
                     boss = False
@@ -440,20 +599,21 @@ def start_lvl_game():
 
         crash_in_player = pygame.sprite.spritecollide(player, enemies, True)
         for crash in crash_in_player:
-            hp -= crash.damage_crash
+            if not cheat_mode:
+                hp -= crash.damage_crash
             kills_my_boss += 1
         if hp <= 0:
             running = False
 
         hits_boos_in_player = pygame.sprite.spritecollide(player, bullets_boss, True)
         for bul in hits_boos_in_player:
-            hp -= bul.damage
+            if not cheat_mode:
+                hp -= bul.damage
         if hp <= 0:
             running = False
             if ENABLE_SOUND == 'True':
                 crash_music.play()
 
-        font_1 = pygame.font.SysFont('Arial', 20)
         hp_text = font_1.render(f'Ваше здоровье: {hp}', False, (255, 255, 255))
         score_text = font_1.render(f'Набранные очки: {score}', False, (255, 255, 255))
         cur_level_text = font_1.render(f'Уровень: {str(CURRENT_LEVEL)}', False, (255, 255, 255))
@@ -470,16 +630,22 @@ def start_lvl_game():
         screen.blit(cur_level_text, (SCREEN_WIDTH // 2 - cur_level_text.get_width() // 2, 20))
 
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(FPS)
 
-    settings['cash'] += score
+    settings['stats']['cash'] += score
     with open('settings.json', mode='w') as f:
         json.dump(settings, f)
     with open('results.csv', mode='a') as csvfile:
         csvfile.write(f'\n{str(datetime.datetime.now())},{score},{kills}')
+    all_sprites.clear(screen, screen)
+    enemies.clear(screen, screen)
+    bullets.clear(screen, screen)
+    bullets.update()
+    bullets.draw(screen)
     finish_lvl_screen(f'Вы проиграли. Набранные очки: {score}', 'lvl', 'lost')
     pygame.quit()
     return
+
 
 if __name__ == "__main__":
     start_screen()

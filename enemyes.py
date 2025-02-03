@@ -3,7 +3,7 @@ import random
 import json
 with open('settings.json') as f:
     settings = json.load(f)
-HEALTH_PLAYER = settings['health']
+HEALTH_PLAYER = settings["stats"]['health']
 
 from config import *
 

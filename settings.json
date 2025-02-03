@@ -1,1 +1,1 @@
-{"health": 60, "speed": 5, "bullet_col": 10, "bullet_speed": 3, "bullet_damage": 20, "cash": 54005, "level": 1, "enable_sound": "False"}
+{"stats": {"health": 600000, "speed": 5, "bullet_col": 10, "bullet_speed": 5, "bullet_damage": 20, "cash": 34485, "level": "3", "enable_sound": "True"}, "shop": {"price_up_health": 5000, "price_up_speed": 4000, "price_up_bullet_speed": 5000, "price_up_bullet_damage": 10000, "price_up_bullet_col": 7000}}
