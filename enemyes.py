@@ -3,7 +3,7 @@ import random
 import json
 with open('settings.json') as f:
     settings = json.load(f)
-HEALTH_PLAYER = settings['health']
+HEALTH_PLAYER = settings["stats"]['health']
 
 from config import *
 
@@ -22,7 +22,10 @@ class Enemy1(pygame.sprite.Sprite):
     def update(self):
         self.rect.y += self.speed
         if self.rect.top > SCREEN_HEIGHT:
-            self.kill()
+            return True
+        return False
+
+
 
 class Enemy2(pygame.sprite.Sprite):
     def __init__(self):
@@ -37,13 +40,14 @@ class Enemy2(pygame.sprite.Sprite):
     def update(self):
         self.rect.y += self.speed
         if self.rect.top > SCREEN_HEIGHT:
-            self.kill()
+            return True
         if random.randint(1, 15) == 2:
             rand = random.randint(1, 2)
             if rand == 1 and self.rect.x - self.speed * 2.5 >= 0:
                 self.rect.x -= self.speed * 2.5
             elif rand == 2 and self.rect.x + self.rect.width + self.speed * 3 <= SCREEN_WIDTH:
                 self.rect.x += self.speed * 2.5
+            return False
 
 
 
@@ -60,12 +64,13 @@ class Enemy3(pygame.sprite.Sprite):
     def update(self):
         self.rect.y += self.speed
         if self.rect.top > SCREEN_HEIGHT:
-            self.kill()
+            return True
         rand = random.randint(1, 2)
         if rand == 1 and self.rect.x - self.speed * 3 >= 0:
             self.rect.x -= self.speed * 3
         elif rand == 2 and self.rect.x + self.rect.width + self.speed * 5 < SCREEN_WIDTH:
             self.rect.x += self.speed * 3
+        return False
 
 
 class Boss1(pygame.sprite.Sprite):
@@ -85,7 +90,7 @@ class Boss1(pygame.sprite.Sprite):
         global bullets_boss
         self.rect.y += self.speed * 0.2
         if self.rect.top > SCREEN_HEIGHT:
-            self.kill()
+            return True
         if not self.flag:
             if self.rect.x - self.speed >= 0:
                 self.rect.x -= self.speed
@@ -100,6 +105,7 @@ class Boss1(pygame.sprite.Sprite):
         if rand == 5:
             bullet = BulletBoss(self.rect.centerx, self.rect.bottom, self.bullet_speed, self.damage_bullet)
             bullets_boss.add(bullet)
+        return False
 
 
 
@@ -120,7 +126,7 @@ class Boss2(pygame.sprite.Sprite):
         global bullets_boss
         self.rect.y += self.speed * 0.4
         if self.rect.top > SCREEN_HEIGHT:
-            self.kill()
+            return True
         if not self.flag:
             if self.rect.x - self.speed >= 0:
                 self.rect.x -= self.speed
@@ -135,6 +141,7 @@ class Boss2(pygame.sprite.Sprite):
         if rand == 5:
             bullet = BulletBoss(self.rect.centerx, self.rect.bottom, self.bullet_speed, self.damage_bullet)
             bullets_boss.add(bullet)
+        return False
 
 
 class Boss3(pygame.sprite.Sprite):
@@ -154,7 +161,7 @@ class Boss3(pygame.sprite.Sprite):
         global bullets_boss
         self.rect.y += self.speed * 0.5
         if self.rect.top > SCREEN_HEIGHT:
-            self.kill()
+            return True
         if not self.flag:
             if self.rect.x - self.speed >= 0:
                 self.rect.x -= self.speed
@@ -169,6 +176,7 @@ class Boss3(pygame.sprite.Sprite):
         if rand == 5:
             bullet = BulletBoss(self.rect.centerx, self.rect.bottom, self.bullet_speed, self.damage_bullet)
             bullets_boss.add(bullet)
+        return False
 
 
 class BulletBoss(pygame.sprite.Sprite):
@@ -182,4 +190,4 @@ class BulletBoss(pygame.sprite.Sprite):
     def update(self):
         self.rect.y += self.bullet_speed
         if self.rect.bottom > SCREEN_HEIGHT:
-            self.kill()
+            return True
